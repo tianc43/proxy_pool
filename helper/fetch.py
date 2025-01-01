@@ -12,6 +12,7 @@
 """
 __author__ = 'JHao'
 
+from datetime import datetime
 from threading import Thread
 from helper.proxy import Proxy
 from helper.check import DoValidator
@@ -42,7 +43,7 @@ class _ThreadFetcher(Thread):
                     self.proxy_dict[proxy].add_source(self.fetch_source)
                 else:
                     self.proxy_dict[proxy] = Proxy(
-                        proxy, source=self.fetch_source)
+                        proxy, source=self.fetch_source, last_used=datetime.strftime(datetime.fromtimestamp(0), '%Y-%m-%d %H:%M:%S'))
         except Exception as e:
             self.log.error("ProxyFetch - {func}: error".format(func=self.fetch_source))
             self.log.error(str(e))

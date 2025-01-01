@@ -14,6 +14,7 @@
 """
 __author__ = 'JHao'
 
+from datetime import datetime
 from redis.exceptions import TimeoutError, ConnectionError, ResponseError
 from redis.connection import BlockingConnectionPool
 from handler.logHandler import LogHandler
@@ -47,19 +48,22 @@ class RedisClient(object):
                                                                    socket_timeout=5,
                                                                    **kwargs))
 
-    def get(self, https):
+    def get(self, https, lru):
         """
         返回一个代理
         :return:
         """
+        selected_proxy = None
+        proxies = list(self.__conn.hvals(self.name))
+
         if https:
-            items = self.__conn.hvals(self.name)
-            proxies = list(filter(lambda x: json.loads(x).get("https"), items))
-            return choice(proxies) if proxies else None
+            proxies = list(filter(lambda x: json.loads(x).get("https"), proxies))
+        if lru:
+            proxies = sorted(proxies, key=lambda obj: datetime.strptime(json.loads(obj).get("last_used"), "%Y-%m-%d %H:%M:%S"))
+            selected_proxy = proxies[0] if proxies and len(proxies)>0 else None
         else:
-            proxies = self.__conn.hkeys(self.name)
-            proxy = choice(proxies) if proxies else None
-            return self.__conn.hget(self.name, proxy) if proxy else None
+            selected_proxy = choice(proxies) if proxies else None
+        return selected_proxy
 
     def put(self, proxy_obj):
         """

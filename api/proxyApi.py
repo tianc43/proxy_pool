@@ -16,6 +16,8 @@
 """
 __author__ = 'JHao'
 
+import copy
+from datetime import datetime
 import platform
 from werkzeug.wrappers import Response
 from flask import Flask, jsonify, request
@@ -62,6 +64,18 @@ def get():
     proxy = proxy_handler.get(https)
     return proxy.to_dict if proxy else {"code": 0, "src": "no proxy"}
 
+
+@app.route('/getLRU/')
+def getLRU():
+    https = request.args.get("type", "").lower() == 'https'
+    proxy = proxy_handler.get(https, True)
+    if proxy is None:
+        return {"code": 0, "src": "no proxy"}
+    new_proxy = copy.deepcopy(proxy)
+    new_proxy.last_used = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    proxy_handler.put(new_proxy)
+    
+    return proxy.to_dict
 
 @app.route('/pop/')
 def pop():

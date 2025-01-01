@@ -12,13 +12,14 @@
 """
 __author__ = 'JHao'
 
+from datetime import datetime
 import json
 
 
 class Proxy(object):
 
     def __init__(self, proxy, fail_count=0, region="", anonymous="",
-                 source="", check_count=0, last_status="", last_time="", https=False):
+                 source="", check_count=0, last_status="", last_time="", last_used="", https=False):
         self._proxy = proxy
         self._fail_count = fail_count
         self._region = region
@@ -27,6 +28,7 @@ class Proxy(object):
         self._check_count = check_count
         self._last_status = last_status
         self._last_time = last_time
+        self._last_used = last_used
         self._https = https
 
     @classmethod
@@ -40,6 +42,7 @@ class Proxy(object):
                    check_count=_dict.get("check_count", 0),
                    last_status=_dict.get("last_status", ""),
                    last_time=_dict.get("last_time", ""),
+                   last_used=_dict.get("last_used", ""),
                    https=_dict.get("https", False)
                    )
 
@@ -87,6 +90,11 @@ class Proxy(object):
     def https(self):
         """ 是否支持https """
         return self._https
+    
+    @property
+    def last_used(self):
+        """ 最后一次使用时间 """
+        return self._last_used
 
     @property
     def to_dict(self):
@@ -99,6 +107,7 @@ class Proxy(object):
                 "source": self.source,
                 "check_count": self.check_count,
                 "last_status": self.last_status,
+                "last_used": self.last_used,
                 "last_time": self.last_time}
 
     @property
@@ -129,6 +138,10 @@ class Proxy(object):
     @region.setter
     def region(self, value):
         self._region = value
+
+    @last_used.setter
+    def last_used(self, value):
+        self._last_used = value
 
     def add_source(self, source_str):
         if source_str:
